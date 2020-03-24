@@ -1,3 +1,6 @@
+pandas
+tensorflow
+pydub
 python_speech_features
 scipy
 numpy
