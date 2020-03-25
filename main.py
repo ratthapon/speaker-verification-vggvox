@@ -1,3 +1,4 @@
+# %%
 import collections
 import glob
 import re
@@ -9,11 +10,12 @@ from pandas import DataFrame
 from scipy.io import wavfile
 
 from pydub import AudioSegment
-from pydub.playback import play
+from sklearn.metrics.pairwise import cosine_similarity, cosine_distances
+from sklearn.model_selection import train_test_split
 
 from vggvox import constants as config
 import vggvox.model
-from vggvox.dataset import VoxCeleb2Dataset
+from vggvox.dataset import VoxCeleb2Dataset, VoxCeleb2Dataset2
 from vggvox.feature_extraction import FastFourierTransform
 
 model = vggvox.model.vggvox_model()
@@ -27,6 +29,7 @@ DATA_GLOB = TRAIN_DIR + '*/*/*.m4a'
 # DATA_GLOB = TRAIN_DIR + "/id" + "00081/vnEsqFqzC8k/00200.m4a"  # TRAIN_DIR + '*/*/*.m4a'
 
 
+# %%
 class SpeakerTemplate(object):
     templates = None  # np.zeros(1024, 3)
 
@@ -52,13 +55,15 @@ def read_dataset(DATA_GLOB: str):
     return signal, id
 
 
-def enroll_3_reduce_mean(speaker_templates: SpeakerTemplate):
+def average_cosine_score(
+        enrolled, test,
+        axis=1
+):
     '''
     Compute a score based on 3 enroll sample and use mean-reduced cosine distance
-    score = 1/n *sum{ emb(i); i = 1..n } ; n = 3
+    score = 1 - MSE
     '''
-
-    pass
+    return 1 - tf.reduce_sum(tf.math.squared_difference(enrolled, test), axis=axis)
 
 
 def benchmark(dataset, num_epochs=2):
@@ -97,14 +102,17 @@ extract_feature = lambda filename: FastFourierTransform.get_fft_spectrum(
 
 extract_id = lambda filename: int(re.search(r"id(\d+)", filename).group(1))
 
+# %%
 if __name__ == '__main__':
     # test_verification()
 
+    # %% minimal vggvox usage
     # (samples, id) = read_dataset(DATA_GLOB=DATA_GLOB)
     # feature = FastFourierTransform.get_fft_spectrum(samples)
     # embedding = model.predict(feature.reshape(1, *feature.shape, 1))
     # print(embedding)
 
+    # %% applying generator and dataset for large scale
     # VoxCeleb2Dataset(DATA_GLOB=DATA_GLOB)
     # benchmark(ArtificialDataset(num_samples=10))
     v = VoxCeleb2Dataset(DATA_GLOB=DATA_GLOB)
@@ -114,16 +122,83 @@ if __name__ == '__main__':
     embs1 = model.predict_generator(v, steps=5)
     embs2 = model.predict_generator(v2, steps=5)
     print(embs1, embs2)
+    scores = average_cosine_score(embs1, embs2[0, :, :, :])
+    print("score", scores)
+    print("score", np.squeeze(scores))
 
     embs = v.next()
     model.predict(embs[0])
 
+    # %% Create simple dataset
     filelist = DataFrame({
         "id": None,
         "filename": glob.glob(DATA_GLOB)
     })
     filelist.id = filelist.filename.apply(extract_id)
-    filelist = filelist.sort_values(by="id").reindex()
+    filelist = filelist.sort_values(by=["id", "filename"]).reindex()
+    N_sample = 20
+    samples = filelist.groupby("id").apply(lambda x: x.sample(N_sample, random_state=0)).reset_index(drop=True)
 
-    # model.predict_generator(VoxCeleb2Dataset(DATA_GLOB=DATA_GLOB), steps=1)
-    # model.predict_generator()
+    # %% Extract embedding from dataset
+    experiment_set = {}
+    speaker_ids = samples.id.unique()
+    for speaker_id in speaker_ids:
+        enroll, test = train_test_split(
+            samples[samples.id == speaker_id],
+            train_size=10, random_state=0)
+
+        experiment_set[speaker_id] = {}
+        experiment_set[speaker_id]["enroll"] = enroll
+        experiment_set[speaker_id]["test"] = test
+
+        experiment_set[speaker_id]["enroll_embs"] = np.squeeze(
+            model.predict_generator(
+                VoxCeleb2Dataset2(filelist=enroll),
+                steps=10
+            )
+        )
+        experiment_set[speaker_id]["test_embs"] = np.squeeze(
+            model.predict_generator(
+                VoxCeleb2Dataset2(filelist=test),
+                steps=10
+            )
+        )
+
+    # %% Compute baseline score
+    for speaker_id in speaker_ids:
+        experiment_set[speaker_id]["baseline_scores"] = np.squeeze(
+            cosine_distances(
+                experiment_set[speaker_id]["enroll_embs"],
+                experiment_set[speaker_id]["test_embs"]
+            )
+        )
+
+    # %% Compute attacking score
+    speaker_ids = samples.id.unique()
+    for speaker_id in speaker_ids:
+        experiment_set[speaker_id]["attacks_score"] = {}
+        experiment_set[speaker_id]["avg_score"] = {}
+
+        for attacker in speaker_ids:
+            if attacker == speaker_id:
+                experiment_set[speaker_id]["avg_score"][f"by_{speaker_id}"] = "{0:.4f}".format(
+                    experiment_set[speaker_id]["baseline_scores"].mean()
+                )
+                continue
+
+            score = np.squeeze(
+                cosine_distances(
+                    experiment_set[speaker_id]["enroll_embs"],
+                    experiment_set[attacker]["test_embs"]
+                )
+            )
+
+            print(f"Attacker id {attacker} attacked {speaker_id}, avg_damage={score.mean()}")
+
+            experiment_set[speaker_id]["attacks_score"][f"by_{attacker}"] = score
+
+            experiment_set[speaker_id]["avg_score"][f"by_{attacker}"] = "{0:.4f}".format(score.mean())
+
+    #%%
+    clf = tf.reduce_sum(tf.math.squared_difference(model, model), axis=3)
+    tf.keras.utils.plot_model(clf, "combined_pretrained")
