@@ -104,6 +104,6 @@ ENV/
 res/
 .DS_Store
 
-# Project
-data/
-models/
+# Ignore model
+*.pb
+*.h5
