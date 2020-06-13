@@ -1,14 +1,11 @@
 import keras.backend as K
-import tensorflow
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import Conv2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D
 from tensorflow.keras.layers import Input, GlobalAveragePooling2D, Reshape
-from tensorflow.keras.layers.convolutional import Conv2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D
-from tensorflow.keras.layers.core import Lambda, Activation
-from tensorflow.keras.layers.normalization import BatchNormalization
+from tensorflow.keras.layers import Lambda, Activation
 from tensorflow.keras.models import Model
 
 import config.constants as c
-
-tensorflow.compat.v1.disable_eager_execution()
 
 
 class VGGVox:
