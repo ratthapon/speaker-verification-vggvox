@@ -1,8 +1,8 @@
 import numpy as np
-from scipy.signal import lfilter, butter
+from scipy.signal import lfilter
 from python_speech_features import sigproc
 
-import vggvox.constants as c
+import config.constants as c
 
 
 class FastFourierTransform(object):

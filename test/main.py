@@ -1,6 +1,6 @@
 # %%
-import collections
 import glob
+import os
 import re
 import time
 
@@ -10,19 +10,20 @@ from pandas import DataFrame
 from scipy.io import wavfile
 
 from pydub import AudioSegment
-from sklearn.metrics.pairwise import cosine_similarity, cosine_distances
+from sklearn.metrics.pairwise import cosine_distances
 from sklearn.model_selection import train_test_split
 
-from vggvox import constants as config
+from config import constants as config
 import vggvox.model
-from vggvox.dataset import VoxCeleb2Dataset, VoxCeleb2Dataset2
-from vggvox.feature_extraction import FastFourierTransform
+from data.dataset.dataset import VoxCeleb2Dataset, VoxCeleb2Dataset2
+from feature.feature_extraction import FastFourierTransform
 
 model = vggvox.model.vggvox_model()
 model.load_weights(config.WEIGHTS_FILE)
 # model.summary()
 
-TRAIN_DIR = "./data/VoxCeleb2_simple10/aac/"
+HOME = os.getenv("HOME", ".")
+TRAIN_DIR = f"{HOME}/dataset/VoxCeleb2_simple10/aac/"
 DATA_GLOB = TRAIN_DIR + '*/*/*.m4a'
 
 
@@ -63,7 +64,7 @@ def average_cosine_score(
     Compute a score based on 3 enroll sample and use mean-reduced cosine distance
     score = 1 - MSE
     '''
-    return 1 - tf.reduce_sum(tf.math.squared_difference(enrolled, test), axis=axis)
+    return 1 - tf.math.reduce_sum(tf.math.squared_difference(enrolled, test), axis=axis)
 
 
 def benchmark(dataset, num_epochs=2):
@@ -200,5 +201,5 @@ if __name__ == '__main__':
             experiment_set[speaker_id]["avg_score"][f"by_{attacker}"] = "{0:.4f}".format(score.mean())
 
     #%%
-    clf = tf.reduce_sum(tf.math.squared_difference(model, model), axis=3)
-    tf.keras.utils.plot_model(clf, "combined_pretrained")
+    # clf = tf.reduce_sum(tf.math.squared_difference(model, model), axis=3)
+    # tf.keras.utils.plot_model(clf, "combined_pretrained")

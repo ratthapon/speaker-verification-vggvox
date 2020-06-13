@@ -2,11 +2,11 @@ import glob
 import re
 from abc import ABC
 
+import tensorflow as tf
 from pandas import DataFrame
 from pydub import AudioSegment
-import tensorflow as tf
 
-from vggvox.feature_extraction import FastFourierTransform
+from feature.feature_extraction import FastFourierTransform
 
 TRAIN_DIR = "./data/VoxCeleb2_simple10/aac/"
 DATA_GLOB = TRAIN_DIR + '*/*/*.m4a'
