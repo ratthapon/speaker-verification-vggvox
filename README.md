@@ -41,17 +41,17 @@ git clone ${GIT_URL}/speaker-verification-vggvox
 #### 2. Create virtual environment
 ```shell script
 cd speaker-verification-vggvox
-conda create -n vggvox37tf2 -python=3.7.7
+conda create -n vggvox37tf2 python=3.7.7
 ```
 
 #### 3. Install `ffmpeg` library
 ```shell script
-bash ./install_decoder.sh
+sudo apt-get install ffmpeg
 ```
 
 #### 4. Install dependencies
 ```shell script
-bash ./install_decoder.sh
+pip install -r requirements.txt
 ```
 
 
