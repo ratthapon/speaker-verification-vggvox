@@ -22,7 +22,7 @@ def sample_voxceleb2(
         FLAT_DIRECTORY: bool = True,
         COLUMNS: list = None,
         bootstrap_replace: bool = False,
-        id_pattern: str = r"(id\d+)"
+        id_pattern: str = r"\/(id\d+)\/"
 ):
     """
     Sampling N_SPEAKER and N_SAMPLE_PER_SPEAKER data from VoxCeleb2 dataset's SOURCE_DIRECTORY and copy to DEST_DIRECTORY.

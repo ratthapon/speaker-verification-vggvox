@@ -41,7 +41,7 @@ class VoxCeleb2Dataset(tf.data.Dataset, ABC):
         for encoded_filename in filelist:
             filename = encoded_filename.decode('UTF-8')
 
-            id = re.search(r"(id\d+)", filename).group(1)
+            id = re.search(r"\/(id\d+)\/", filename).group(1)
             base_filename = re.search(r"id\d+\/(\w+.\w+.\w+)", filename).group(1)
 
             meta_list += [(id, base_filename)]

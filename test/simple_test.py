@@ -1,23 +1,22 @@
-import itertools
 import os
 
+import numpy as np
 import pandas
 import tensorflow as tf
-import numpy as np
 from pandas import DataFrame
 from tqdm import tqdm
 
-from config import constants as config
 import vggvox.model
+from config import constants as config
 from data.dataset.VoxCeleb2Dataset import VoxCeleb2Dataset
 
 np.set_printoptions(precision=4)
 pandas.set_option("display.precision", 4)
 
+
 ## disable to speed up, enable for as_numpy_iterator() execution
 ## TODO refactor as_numpy_iterator to TF2 with disable eager execution
 # tf.compat.v1.disable_eager_execution()
-
 
 
 def average_cosine_score(
@@ -46,10 +45,10 @@ model.load_weights(config.WEIGHTS_FILE)
 
 if __name__ == "__main__":
     HOME = os.getenv("HOME", ".")
-    REF_DIR = f"{HOME}/dataset/VoxCeleb2_simple3/ref/"
-    REF_GLOB = REF_DIR + '*/*/*.m4a'
-    EVAL_DIR = f"{HOME}/dataset/VoxCeleb2_simple3/eval/"
-    EVAL_GLOB = EVAL_DIR + '*/*/*.m4a'
+    REF_DIR = f"{HOME}/dataset/VoxCeleb2_303id5sample/ref/"
+    REF_GLOB = REF_DIR + '*/*.m4a'
+    EVAL_DIR = f"{HOME}/dataset/VoxCeleb2_303id5sample/eval/"
+    EVAL_GLOB = EVAL_DIR + '*/*.m4a'
 
     results = DataFrame(columns=["ref_id", "eval_id", "score", "ref_filename", "eval_filename"])
     len_ref = len(list(VoxCeleb2Dataset.meta_generator(REF_GLOB)))
@@ -93,14 +92,14 @@ if __name__ == "__main__":
                     eval_data, _ = v2.next()
                     eval_id, eval_fname = eval_metagen.__next__()
                 except StopIteration:
-                    # TODO reset eval_metagen, v2
-                    # TODO prefetch sample
+                    # reset eval_metagen, v2
+                    # prefetch sample
                     v2 = VoxCeleb2Dataset(DATA_GLOB=EVAL_GLOB, batch=len_eval)
                     eval_metagen = VoxCeleb2Dataset.meta_generator(EVAL_GLOB)
                     eval_data, _ = v2.next()
                     eval_id, eval_fname = eval_metagen.__next__()
 
-                    results.to_csv("spkr_ver_scores.csv")
+                    results.to_csv("spkr_ver_scores.csv", index=False)
                     break
 
             try:
@@ -110,5 +109,5 @@ if __name__ == "__main__":
                 print("Finished")
                 break
 
-        results.to_csv("spkr_ver_scores.csv")
+        results.to_csv("spkr_ver_scores.csv", index=False)
         print(results)
