@@ -46,7 +46,7 @@ conda create -n vggvox37tf2 python=3.7.7
 
 #### 3. Install `ffmpeg` library
 ```shell script
-sudo apt-get install ffmpeg
+sudo apt-get install -y ffmpeg
 ```
 
 #### 4. Install dependencies
@@ -56,23 +56,41 @@ pip install -r requirements.txt
 
 
 ## Running the tests
-
-
+```shell script
+python3 -m pytest
 ```
 
+## Research workflow
+
+#### 0. Setup Environment Parameters
+```shell script
+# cd ${HOME}/speaker-verification-vggvox
+export PYTHONPATH=$PWD
 ```
+
+#### 1. Prepare Dataset
+```shell script
+python3 cmd/prepare_voxceleb2.py voxceleb2_303ids_5samples
+```
+
+#### 2. Download Pre-trained Model
+[Pre-trained Model](https://github.com/linhdvu14/vggvox-speaker-identification/blob/master/data/model/weights.h5)
+```shell script
+cp weights.h5 model/
+```
+
+#### 3. Run Evaluation
 
 ## Deployment
-
-
 ```
 
 ```
-- Use as a lib, please see API list. [under development]
 
 ## Built With
+[under development]
 
 ## Speaker Verification
+[under development]
 
 ## Contributing
 
@@ -88,6 +106,7 @@ We use [SemVer 2.0.0](http://semver.org/) for versioning. For the versions avail
 See also the list of [contributors](https://github.com/ratthapon/speaker-verification-vggvox/graphs/contributors) who participated in this project.
 
 ## Acknowledgments
+* [Pre-trained VGGVox in Python-Tensorflow](https://github.com/linhdvu14/vggvox-speaker-identification)
 
 ## Issues
 

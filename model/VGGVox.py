@@ -1,14 +1,15 @@
 import keras.backend as K
-from keras.layers import Input, GlobalAveragePooling2D, Reshape
-from keras.layers.convolutional import Conv2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D
-from keras.layers.core import Lambda, Activation
-from keras.layers.normalization import BatchNormalization
-from keras.models import Model
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import Conv2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D
+from tensorflow.keras.layers import Input, GlobalAveragePooling2D, Reshape
+from tensorflow.keras.layers import Lambda, Activation
+from tensorflow.keras.models import Model
 
-import vggvox.constants as c
+import config.constants as c
 
 
 class VGGVox:
+
 
     # Block of layers: Conv --> BatchNorm --> ReLU --> Pool
     def conv_bn_pool(

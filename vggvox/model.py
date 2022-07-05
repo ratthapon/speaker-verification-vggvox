@@ -1,8 +1,5 @@
-import json
-
-import vggvox.constants as c
 import keras.backend as K
-import numpy as np
+import config.constants as c
 from keras.layers import Input, GlobalAveragePooling2D, Reshape
 from keras.layers.convolutional import Conv2D, ZeroPadding2D, MaxPooling2D, AveragePooling2D
 from keras.layers.core import Lambda, Activation

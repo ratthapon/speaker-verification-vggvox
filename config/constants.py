@@ -10,7 +10,7 @@ BUCKET_STEP = 1
 MAX_SEC = 10
 
 # Model
-WEIGHTS_FILE = pkg_resources.resource_filename('data', 'model/weights.h5')
+WEIGHTS_FILE = "model/weights.h5"  # pkg_resources.resource_filename('data', 'model/weights.h5')
 COST_METRIC = "cosine"  # euclidean or cosine
 INPUT_SHAPE=(NUM_FFT,None,1)
 
